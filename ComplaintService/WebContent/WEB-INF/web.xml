@@ -13,6 +13,17 @@
 	<url-pattern>/rest/*</url-pattern>
   </servlet-mapping>
   
+  <servlet>
+    <description></description>
+    <display-name>ComplaintAPI</display-name>
+    <servlet-name>ComplaintAPI</servlet-name>
+    <servlet-class>com.electrogrid.complaint.servlet.ComplaintAPI</servlet-class>
+  </servlet>
+   <servlet-mapping>
+    <servlet-name>ComplaintAPI</servlet-name>
+    <url-pattern>/ComplaintAPI</url-pattern>
+  </servlet-mapping>
+  
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
     <welcome-file>index.jsp</welcome-file>

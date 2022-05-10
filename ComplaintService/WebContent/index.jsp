@@ -1,57 +1,45 @@
+<%@page import="com.electrogrid.complaint.model.Complaint"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
 <html>
-<body>
-<h2>Jersey RESTful Web Application!</h2>
-<p><a href="webapi/myresource">Jersey resource</a>
-<p>Visit <a href="http://jersey.java.net">Project Jersey website</a>
-for more information on Jersey!
 <link rel="stylesheet" href="Views/bootstrap.min.css">
 <script src="Components/jquery-3.2.1.min.js"></script>
 <script src="Components/Complaint.js"></script>
-
-
-<div class="container"> 
- <div class="row">
- <div class="col-8"> 
- <h1 class="m-3">Complaint details</h1> 
- <form id="formComplaint"> 
-		<!-- USER -->
-			<div class="input-group input-group-sm mb-3">
-				<div class="input-group-prepend">
-				 <span class="input-group-text" id="user">User: </span>
+<body style="background-color:#B0C4DE;">
+<div style="text-align: center;position:relative;left:250px;top:50px;" class="container">
+		<div class="row">
+			<div style="background-color:#DCDCDC;height:920px;border-radius:10px;" class="col-6">
+				<h1>Complaint Dashboard</h1>
+				<form id="formComplaint" name="formComplaint" action="<%=request.getContextPath()%>/ComplaintAPI">
+					User: 
+					<input id="user" name="user" type="text"class="form-control form-control-sm" placeholder="Enter User"> <br>
+					Title:
+					<input id="title" name="title" type="text" class="form-control form-control-sm" placeholder="Enter Title"> <br> 
+					Description:
+					 <input id="description" name="description" type="text" class="form-control form-control-sm" placeholder="Enter Description"> <br>
+					
+					 
+					 <input id="btnSave" name="btnSave" type="button" value="Save" class="btn btn-primary"> 
+					 <input type="hidden" id="hidIDSave" name="hidIDSave" value="">
+				
+				</form>
+				<div id="alertSuccess" class="alert alert-success"></div>
+				<div id="alertError" class="alert alert-danger"></div>
+				<br>
+				<div style="position:relative;right:20px;" id="divComplaintGrid">
+					<%
+					Complaint complaintObj = new Complaint();
+					out.print(complaintObj.fetchRecentComplaints());
+					%>
 				</div>
-			<input type="text" id="user" name="user">
+				<br>
+				
+				
+				
 			</div>
-		<!-- TITLE -->
-			<div class="input-group input-group-sm mb-3">
-				<div class="input-group-prepend">
-				 <span class="input-group-text" id="title">Title: </span>
-				</div>
-			<input type="text" id="title" name="title">
-			</div>
-		<!-- DESCRIPTION -->
-			<div class="input-group input-group-sm mb-3">
-				<div class="input-group-prepend">
-				 <span class="input-group-text" id="desciption">Description: </span>
-				</div>
-		<input type="text" id="desciption" name="desciption">
-		</div>
-		
-		<div id="alertSuccess" class="alert alert-success"></div>
-		<div id="alertError" class="alert alert-danger"></div>
-		<input type="button" id="btnSave" value="Save" class="btn btn-primary">
- 	
- </form>
- </div>
- </div>
- 
- <br>  
-	<div class="row">
-		<div class="col-12" id="colComplaint">
-		 
 		</div>
 	</div>
- 
-</div>
 
-</body>
+</body> 
 </html>
