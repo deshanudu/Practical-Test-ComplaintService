@@ -11,15 +11,15 @@ import com.electrogrid.complaint.utils.DBConnectionSingleton;
 
 public class Complaint {
 
-	private Integer compId;
-	private Integer user;
+	private int compId;
+	private int user;
 	private java.sql.Timestamp dTime;
 	private String title;
 	private String description;
 
 	public Complaint() {}
 
-	public Complaint(Integer compId, Integer user, Timestamp dTime, String title, String description) {
+	public Complaint(int compId, int user, Timestamp dTime, String title, String description) {
 		super();
 		this.compId = compId;
 		this.user = user;
@@ -30,68 +30,24 @@ public class Complaint {
 
 	static Connection con = DBConnectionSingleton.getConnection();
 	
-	//insert method
-	public String insertItem(int user, String title, String des) {
-		this.user = user;
-		this.title = title;
-		this.description = des;
-		
-		String output = this.save();
-		return output;
-		
-	}
-	
-	public String save()
-	 {
-		String output = "";
-	 try
-	 {
-		 if (con == null)
-		 {return "Error while connecting to the database."; }
-	 
-		 // create a prepared statement
-		 String query = " insert into complaints values (0,?, ?, ?, ?)";
-		 PreparedStatement preparedSt = con.prepareStatement(query,Statement.RETURN_GENERATED_KEYS);
-		 
-		 //Prepare sql timestamp
-		 final java.util.Date today = new java.util.Date();
-	   	 final java.sql.Timestamp todaySQL = new java.sql.Timestamp(today.getTime());
-		 this.dTime = todaySQL;
-	   	 
-		 // binding values
-		 preparedSt.setInt(1, this.user);
-		 preparedSt.setTimestamp(2, todaySQL); //dtime
-		 preparedSt.setString(3, this.title); 
-		 preparedSt.setString(4, this.description);
-	 
-		 // execute the statement
-		 preparedSt.executeUpdate();
-		 
-		 //get auto incremented id
-		 ResultSet rs = preparedSt.getGeneratedKeys();
-        if(rs.next())
-        {
-            this.compId = rs.getInt(1);
-        }
-        
-		 //con.close();
-		 output = "Inserted successfully";
-	 }
-	 catch (Exception e)
-	 {
-		 output = "Error while inserting the item.";
-		 System.err.println(e.getMessage());
-	 }
-	 	return output;
-	 }
 	
 	//get recent complaints
-		public ArrayList<Complaint> fetchRecentComplaints() {
-			ArrayList<Complaint> compList = new ArrayList<Complaint>();
+		public String fetchRecentComplaints() {
+			
+			String output = "";
 			try
 			 {
 				 if (con == null)
-				 {return compList; }
+				 { 
+					 return "Error while connecting to the database for reading."; 
+						 } 
+				 
+				// Prepare the html table to be displayed
+				 output = "<table border='1' style = 'table'><tr>"
+						  + "<th>Complaint ID</th>"
+						  + "<th>User</th>"
+						  + "<th>Title</th>" 
+						  + "<th> Description</th>" ;
 			 
 				 // create a statement and execute query
 				 String query = "SELECT * FROM complaints;";
@@ -109,17 +65,88 @@ public class Complaint {
 			        String description = rs.getString("description");
 			        
 			        //create a list of objects from db rows
-			        Complaint comp = new Complaint(compId, user,dTime,title, description);
-			        compList.add(comp);
+//			        Complaint comp = new Complaint(compId, user,dTime,title, description);
+//			        compList.add(comp);
+			        
+			     // Add into the html table
+			        output += "<tr><td>" + compId + "</td>";
+					output += "<td>" + user + "</td>";
+					output += "<td>" + title + "</td>";
+					output += "<td>" + description + "</td>";
+					
+					
+					//buttons
+					output += "<td><input name='btnUpdate' type='button' value='Update' "
+					+ "class='btnUpdate btn btn-secondary' data-itemid='" + compId + "'></td>"
+					+ "<td><input name='btnRemove' type='button' value='Remove' "
+					+ "class='btnRemove btn btn-danger' data-itemid='" + compId + "'></td></tr>"; 
+					
+
 			        
 			      }
+				 
+				 output += "</table>";
 			 }
 			 catch (Exception e)
 			 {
 				 System.err.println(e.getMessage());
 			 }
-			return compList; 	
+			return output; 	
 		}
+		
+		
+		
+		//insert method
+		public String insertItem(int user, String title, String des) {
+			this.user = user;
+			this.title = title;
+			this.description = des;
+			
+			String output = this.save();
+			return output;
+			
+		}
+		
+		public String save()
+		 {
+			String output = "";
+		 try
+		 {
+			 if (con == null)
+			 {return "Error while connecting to the database."; }
+		 
+			 // create a prepared statement
+			 String query = " insert into complaints values (0,?, ?, ?, ?)";
+			 PreparedStatement preparedSt = con.prepareStatement(query,Statement.RETURN_GENERATED_KEYS);
+			 
+			 //Prepare sql timestamp
+			 final java.util.Date today = new java.util.Date();
+		   	 final java.sql.Timestamp todaySQL = new java.sql.Timestamp(today.getTime());
+			 this.dTime = todaySQL;
+		   	 
+			 // binding values
+			 preparedSt.setInt(1, this.user);
+			 preparedSt.setTimestamp(2, todaySQL); //dtime
+			 preparedSt.setString(3, this.title); 
+			 preparedSt.setString(4, this.description);
+		 
+			 // execute the statement
+			 preparedSt.executeUpdate();
+			 con.close(); 
+			 
+			 String newComplaint = fetchRecentComplaints(); 
+			 output = "{\"status\":\"success\", \"data\": \"" + newComplaint + "\"}"; 
+			
+			
+		 }
+		 catch (Exception e)
+		 {
+			 output = "Error while inserting the item.";
+			 System.err.println(e.getMessage());
+		 }
+		 	return output;
+		 }
+		
 		
 		//Get specific complaint using the id
 		public String fetchById(int id) {
@@ -145,12 +172,17 @@ public class Complaint {
 					this.dTime  = rs.getTimestamp("date");
 					this.title = rs.getString("title");
 					this.description = rs.getString("description");
+					
+					 output += "<tr><td>" + compId + "</td>";
+						output += "<td>" + user + "</td>";
+						output += "<td>" + dTime + "</td>";
+						output += "<td>" + title + "</td>";
+						output += "<td>" + description + "</td>";
+						
 			         
 			      }
 				 
-				 if(!read) {
-					 return null;
-				 }
+				 output += "</table>";
 				 output = "Executed successfully";
 			 }
 			 catch (Exception e)
@@ -175,11 +207,9 @@ public class Complaint {
 				 pSt.setInt(1,id);
 				 int state = pSt.executeUpdate();
 				 //System.out.println(state);
-				 if(state==0) {
-					 output = "Complaint id "+ id +" already cancelled !";
-				 }else {
-					 output = "Complaint id "+ id +" terminated successfully !";
-				 }
+				 String newItems = fetchRecentComplaints();
+				 output = "{\"status\":\"success\", \"data\": \"" +
+				 newItems + "\"}";
 				 
 				
 			 }
@@ -192,8 +222,9 @@ public class Complaint {
 		}
 		
 		//update a complaint
-		public Complaint updateItem(int id,String newDesc)
+		public String updateItem(int id,String newDesc)
 		{
+			String output = "";
 			try
 			 {
 				 if (con == null)
@@ -224,12 +255,9 @@ public class Complaint {
 				        this.description = rs.getString("description"); 
 				      }
 					 
-					 //if there is an affected row return the object
-					 if(!read) {
-						 return null;
-					 }else {
-						 return this;
-					 }
+					 String newItems = fetchRecentComplaints();
+					 output = "{\"status\":\"success\", \"data\": \"" +
+					 newItems + "\"}";
 				 
 			 }
 			 catch (Exception e)
@@ -240,19 +268,19 @@ public class Complaint {
 		}
 
 		//getters and setters
-		public Integer getCompId() {
+		public int getCompId() {
 			return compId;
 		}
 
-		public void setCompId(Integer compId) {
+		public void setCompId(int compId) {
 			this.compId = compId;
 		}
 
-		public Integer getUser() {
+		public int getUser() {
 			return user;
 		}
 
-		public void setUser(Integer user) {
+		public void setUser(int user) {
 			this.user = user;
 		}
 
@@ -275,5 +303,7 @@ public class Complaint {
 		public void setDescription(String description) {
 			this.description = description;
 		}
+
+		
 
 }
